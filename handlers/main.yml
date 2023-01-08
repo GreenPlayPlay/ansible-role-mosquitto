@@ -1,15 +1,20 @@
 - name: restart mqtt container
-  community.docker.docker_container:
-    image: "{{ mqtt_image_name }}"
+  docker_container:
     name: "{{ mqtt_container_name }}"
+    image: "{{ mqtt_image_name + ':' + mqtt_image_version }}"
+    user: "{{ userinfo.uid }}:{{ userinfo.group }}"
     network_mode: "{{ mqtt_container_network_mode }}"
     restart_policy: "{{ mqtt_container_restart_policy }}"
     state: started
     restart: yes
-    published_ports: "{{ mqtt_container_published_ports }}"
+    published_ports: "{{ mqtt_container_published_ports | default(omit, true) }}" 
+    exposed_ports: "{{ mqtt_container_exposed_ports | default(omit, true) }}"
+    networks: "{{ mqtt_container_networks | default(omit) }}"
     volumes: "{{ mqtt_container_volumes }}"
+    labels: "{{ mqtt_container_labels | default(omit) }}"
   listen: restart mqtt
   when: mqtt_installation_method == 'container'
+
 
 - name: restart mqtt service
   service:

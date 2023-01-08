@@ -28,15 +28,21 @@ mqtt_log_types:
 # Container setings
 mqtt_container_name: mqtt
 mqtt_image_name: eclipse-mosquitto
+mqtt_image_version: 2.0.15
 mqtt_container_network_mode: bridge
 mqtt_container_restart_policy: always
 mqtt_container_config_dir: /mosquitto/config
 mqtt_container_data_dir: /mosquitto/data
 mqtt_container_log_dir: /mosquitto/log
 mqtt_container_state: started
+# If false, ports will only be exposed - not published
+mqtt_container_publish_ports: true
 mqtt_container_published_ports:
   - 1883:1883
   - 9001:9001
+mqtt_container_exposed_ports:
+  - 1883
+  - 9001
 
 mqtt_container_volumes:
   - "{{ mqtt_data_dir }}/config:{{ mqtt_container_config_dir }}:{{ mqtt_selinux_mount_options }}ro"

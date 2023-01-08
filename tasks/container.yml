@@ -14,6 +14,7 @@
     system: yes
   tags:
     - mqtt
+    - mqtt_config
   register: userinfo
 
 - name: Create MQTT directories
@@ -53,15 +54,42 @@
     - mqtt
     - mqtt_config
 
+- name: Check if ports should be published 
+  set_fact:
+      mqtt_container_exposed_ports: ""
+  when: mqtt_container_publish_ports is true
+  tags:
+    - mqtt
+    - mqtt_config
+
+- name: Check if ports should be only exposed
+  set_fact:
+      mqtt_container_published_ports: ""
+  when: mqtt_container_publish_ports is false
+  tags:
+    - mqtt
+    - mqtt_config
+
+- name: Pull MQTT docker image
+  docker_image:
+    name: "{{ mqtt_image_name + ':' + mqtt_image_version }}"
+    source: pull
+  register: image_update
+  tags:
+    - mqtt
+
 - name: Run MQTT container
   docker_container:
-    image: "{{ mqtt_image_name }}"
     name: "{{ mqtt_container_name }}"
+    image: "{{ mqtt_image_name + ':' + mqtt_image_version }}"
     user: "{{ userinfo.uid }}:{{ userinfo.group }}"
     network_mode: "{{ mqtt_container_network_mode }}"
     restart_policy: "{{ mqtt_container_restart_policy }}"
     state: started
-    published_ports: "{{ mqtt_container_published_ports }}"
+    published_ports: "{{ mqtt_container_published_ports | default(omit, true) }}" 
+    exposed_ports: "{{ mqtt_container_exposed_ports | default(omit, true) }}"
+    networks: "{{ mqtt_container_networks | default(omit) }}"
     volumes: "{{ mqtt_container_volumes }}"
+    labels: "{{ mqtt_container_labels | default(omit) }}"
   tags:
     - mqtt
